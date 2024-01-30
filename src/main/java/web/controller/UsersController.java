@@ -3,11 +3,13 @@ package web.controller;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import web.model.User;
 import web.service.UserService;
 
+import javax.validation.Valid;
 import java.util.NoSuchElementException;
 
 @Controller
@@ -32,26 +34,34 @@ public class UsersController {
     }
 
     @PostMapping(value = "/users")
-    public String create(@ModelAttribute("user") User user) {
+    public String create(@ModelAttribute("user") @Valid User user, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return "new";
+        }
+
         userService.add(user);
         return "redirect:/users";
     }
+
+    private static final String ERROR_MSG_USER_ID_NOT_FOUND = "Пользователь c id=%s не найден";
 
     @GetMapping(value = "/users/edit")
     public String edit(@RequestParam String id, Model model) {
         try {
             model.addAttribute("user", userService.find(Long.parseLong(id)).orElseThrow());
         } catch (NumberFormatException | NoSuchElementException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-                    String.format("Пользователь c id=%s не найден", id));
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, String.format(ERROR_MSG_USER_ID_NOT_FOUND, id));
         }
         return "edit";
     }
 
-    private static final String ERROR_MSG_USER_ID_NOT_FOUND = "Пользователь c id=%s не найден";
-
     @PatchMapping(value = "/users")
-    public String update(@RequestParam String id, @ModelAttribute("user") User user) {
+    public String update(@RequestParam String id,
+                         @ModelAttribute("user") @Valid User user, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return "edit";
+        }
+
         try {
             userService.update(Long.parseLong(id), user);
         } catch (NumberFormatException | NoSuchElementException e) {

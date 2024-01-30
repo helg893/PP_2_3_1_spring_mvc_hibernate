@@ -1,6 +1,10 @@
 package web.model;
 
+import org.hibernate.validator.constraints.Email;
+import org.hibernate.validator.constraints.NotEmpty;
+
 import javax.persistence.*;
+import javax.validation.constraints.Size;
 
 @Entity
 @Table(name = "users")
@@ -11,12 +15,18 @@ public class User {
     private long id;
 
     @Column(name = "name")
+    @NotEmpty(message = "поле не должно быть пустым")
+    @Size(min = 2, max = 30, message = "длина должна быть от 2 до 30 символов")
     private String name;
 
     @Column(name = "surname")
+    @NotEmpty(message = "поле не должно быть пустым")
+    @Size(min = 2, max = 30, message = "длина должна быть от 2 до 30 символов")
     private String surname;
 
     @Column(name = "email")
+    @NotEmpty(message = "поле не должно быть пустым")
+    @Email(message = "должен быть корректный адрес e-mail")
     private String email;
 
     public User() { }
